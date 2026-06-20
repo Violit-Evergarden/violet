@@ -1,11 +1,26 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import type { ExtractResponse } from '@shared/types/api'
+import { getToolById } from '../../catalog/tools'
+import { ToolLayout } from '../../components/layout/ToolPageShell'
+import { usePageMeta } from '../../hooks/usePageMeta'
+import { recordToolVisit } from '../../hooks/useRecentTools'
+import { Alert } from '../../ui/Alert'
+import { Button } from '../../ui/Button'
+import { Card } from '../../ui/Card'
+import { Textarea } from '../../ui/Input'
+import { Spinner } from '../../ui/Spinner'
 import { extractTranscript, fetchHealth } from './api'
-import { InputPanel } from './components/InputPanel'
-import { ResultPanel } from './components/ResultPanel'
-import { StatusBar } from './components/StatusBar'
+
+const tool = getToolById('video-transcript')!
 
 export default function VideoTranscriptTool() {
+  usePageMeta(tool.name, tool.description)
+
+  useEffect(() => {
+    recordToolVisit(tool.id)
+  }, [])
+
   const [shareText, setShareText] = useState('')
   const [loading, setLoading] = useState(false)
   const [stage, setStage] = useState('')
@@ -16,25 +31,19 @@ export default function VideoTranscriptTool() {
   useEffect(() => {
     fetchHealth()
       .then((health) => {
-        const nextWarnings: string[] = []
-        if (!health.ffmpeg_available) {
-          nextWarnings.push('后端未检测到 ffmpeg，请先安装 ffmpeg')
-        }
-        if (!health.api_key_configured) {
-          nextWarnings.push('未配置 SILICONFLOW_API_KEY，语音识别不可用')
-        }
-        setWarnings(nextWarnings)
+        const next: string[] = []
+        if (!health.ffmpeg_available) next.push('后端未检测到 ffmpeg')
+        if (!health.api_key_configured) next.push('未配置 SILICONFLOW_API_KEY')
+        setWarnings(next)
       })
-      .catch(() => {
-        setWarnings(['后端服务未启动，请先运行 uvicorn'])
-      })
+      .catch(() => setWarnings(['后端服务未启动']))
   }, [])
 
   const handleSubmit = async () => {
     setLoading(true)
     setError('')
     setResult(null)
-    setStage('正在解析链接并下载视频，请稍候...')
+    setStage('正在解析链接并下载视频…')
 
     try {
       const response = await extractTranscript(shareText.trim())
@@ -47,33 +56,59 @@ export default function VideoTranscriptTool() {
     }
   }
 
+  const toolbar = result ? (
+    <Button
+      variant="secondary"
+      size="sm"
+      onClick={async () => {
+        await navigator.clipboard.writeText(result.transcript)
+        toast.success('已复制')
+      }}
+    >
+      复制
+    </Button>
+  ) : undefined
+
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-10">
-      <header className="space-y-2">
-        <p className="text-sm uppercase tracking-[0.2em] text-sky-300">Video Transcript</p>
-        <h1 className="text-3xl font-bold text-white">抖音视频文案提取</h1>
-        <p className="text-sm text-slate-400">
-          粘贴抖音分享文本，自动识别视频中的语音并转为文字。
-        </p>
-      </header>
+    <ToolLayout title={tool.name} toolbar={toolbar}>
+      <div className="space-y-4">
+        {warnings.length > 0 && !error && <Alert variant="warning">{warnings.join(' · ')}</Alert>}
+        {error && <Alert variant="error">{error}</Alert>}
+        {loading && (
+          <Alert variant="info">
+            <span className="inline-flex items-center gap-2">
+              <Spinner size="sm" />
+              {stage}
+            </span>
+          </Alert>
+        )}
 
-      <StatusBar loading={loading} stage={stage} error={error} warnings={warnings} />
+        <Card padding="md">
+          <Textarea
+            rows={5}
+            value={shareText}
+            onChange={(e) => setShareText(e.target.value)}
+            placeholder="粘贴抖音分享文本或 v.douyin.com 短链…"
+            disabled={loading}
+          />
+          <div className="mt-3 flex justify-end">
+            <Button onClick={handleSubmit} loading={loading} disabled={!shareText.trim()}>
+              提取
+            </Button>
+          </div>
+        </Card>
 
-      <InputPanel
-        value={shareText}
-        loading={loading}
-        onChange={setShareText}
-        onSubmit={handleSubmit}
-      />
-
-      {result && (
-        <ResultPanel
-          title={result.title}
-          videoId={result.video_id}
-          transcript={result.transcript}
-          durationSeconds={result.duration_seconds}
-        />
-      )}
-    </div>
+        {result && (
+          <Card padding="md">
+            <p className="mb-3 text-xs text-muted">
+              {result.title} · {Math.round(result.duration_seconds)} 秒
+            </p>
+            <div className="max-h-[min(60dvh,32rem)] overflow-y-auto rounded-lg bg-[var(--color-border-subtle)] p-4 text-sm leading-7 whitespace-pre-wrap">
+              {result.transcript}
+            </div>
+          </Card>
+        )}
+      </div>
+    </ToolLayout>
   )
 }

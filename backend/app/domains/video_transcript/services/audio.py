@@ -44,6 +44,23 @@ def extract_audio(video_path: Path) -> Path:
     return audio_path
 
 
+def convert_to_mp3(source_path: Path, output_path: Path) -> Path:
+    _run_ffmpeg(
+        [
+            "-y",
+            "-i",
+            str(source_path),
+            "-vn",
+            "-acodec",
+            "libmp3lame",
+            "-q:a",
+            "2",
+            str(output_path),
+        ]
+    )
+    return output_path
+
+
 def get_audio_info(audio_path: Path) -> dict:
     if not check_ffmpeg_available():
         raise AudioError("未找到 ffprobe，请先安装 ffmpeg")

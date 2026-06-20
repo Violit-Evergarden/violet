@@ -21,3 +21,9 @@ export interface TaskStatusResponse {
   result: ExtractResponse | null
   error: string | null
 }
+
+export interface AudioTranscriptResponse {
+  filename: string
+  transcript: string
+  duration_seconds: number
+}

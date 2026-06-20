@@ -3,8 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Violet37 在线工具箱</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <meta
+      name="description"
+      content="几案 — 常用在线工具导航。媒体处理、文本转换、图像与码，按需选用，持续扩展。"
+    />
+    <title>几案</title>
+    <script>
+      ;(function () {
+        var k = 'violet37-theme'
+        var t = localStorage.getItem(k)
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = 'dark'
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

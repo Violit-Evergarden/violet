@@ -9,7 +9,7 @@ interface ToolGridProps {
 export function ToolGrid({ tools, emptyMessage = '暂无匹配的工具' }: ToolGridProps) {
   if (tools.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-700 px-6 py-12 text-center text-sm text-slate-500">
+      <p className="rounded-xl border border-dashed border-app px-6 py-12 text-center text-sm text-muted">
         {emptyMessage}
       </p>
     )

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.routers.audio_transcript import router as audio_transcript_router
 from app.routers.health import router as health_router
 from app.routers.video_transcript import legacy_router, router as video_transcript_router
 
@@ -20,6 +21,7 @@ app.add_middleware(
 
 app.include_router(health_router)
 app.include_router(video_transcript_router)
+app.include_router(audio_transcript_router)
 app.include_router(legacy_router)
 
 frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"

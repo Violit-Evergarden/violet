@@ -13,29 +13,41 @@ import { Alert } from '../../ui/Alert'
 import { Button } from '../../ui/Button'
 import { Tabs } from '../../ui/Tabs'
 
-type Mode = 'format' | 'minify'
+const tool = getToolById('base64')!
 
-const tool = getToolById('json-formatter')!
+function encodeBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text)
+  let binary = ''
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b)
+  })
+  return btoa(binary)
+}
 
-export default function JsonFormatterTool() {
+function decodeBase64(value: string): string {
+  const binary = atob(value.trim())
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
+export default function Base64Tool() {
   usePageMeta(tool.name, tool.description)
-
   useEffect(() => {
     recordToolVisit(tool.id)
   }, [])
 
+  const [mode, setMode] = useState<'encode' | 'decode'>('encode')
   const [input, setInput] = useState('')
-  const [mode, setMode] = useState<Mode>('format')
 
   const { output, error } = useMemo(() => {
     if (!input.trim()) return { output: '', error: '' }
     try {
-      const parsed = JSON.parse(input)
-      const formatted =
-        mode === 'format' ? JSON.stringify(parsed, null, 2) : JSON.stringify(parsed)
-      return { output: formatted, error: '' }
+      return {
+        output: mode === 'encode' ? encodeBase64(input) : decodeBase64(input),
+        error: '',
+      }
     } catch {
-      return { output: '', error: 'JSON 格式无效，请检查语法' }
+      return { output: '', error: mode === 'decode' ? 'Base64 格式无效' : '编码失败' }
     }
   }, [input, mode])
 
@@ -45,8 +57,8 @@ export default function JsonFormatterTool() {
         value={mode}
         onChange={setMode}
         options={[
-          { value: 'format', label: '美化' },
-          { value: 'minify', label: '压缩' },
+          { value: 'encode', label: '编码' },
+          { value: 'decode', label: '解码' },
         ]}
       />
       <Button variant="secondary" size="sm" onClick={() => setInput('')} disabled={!input}>
@@ -55,12 +67,11 @@ export default function JsonFormatterTool() {
       <Button
         variant="secondary"
         size="sm"
+        disabled={!output}
         onClick={async () => {
-          if (!output) return
           await navigator.clipboard.writeText(output)
           toast.success('已复制')
         }}
-        disabled={!output}
       >
         复制
       </Button>
@@ -73,16 +84,13 @@ export default function JsonFormatterTool() {
         leftLabel="输入"
         rightLabel="输出"
         left={
-          <label className="block h-full">
-            <span className="sr-only">JSON 输入</span>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder='{"hello":"world"}'
-              className={splitPaneInputClass}
-              spellCheck={false}
-            />
-          </label>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={mode === 'encode' ? '输入文本…' : '粘贴 Base64…'}
+            className={splitPaneInputClass}
+            spellCheck={false}
+          />
         }
         right={
           error ? (
