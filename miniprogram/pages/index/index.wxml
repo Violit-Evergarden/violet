@@ -1,0 +1,36 @@
+<view class="container">
+  <view class="card">
+    <view class="title">抖音视频文案提取</view>
+    <view class="subtitle">粘贴抖音分享文本，自动识别视频中的语音并转为文字</view>
+  </view>
+
+  <view wx:if="{{warning}}" class="alert alert-warning">{{warning}}</view>
+  <view wx:if="{{error}}" class="alert alert-error">{{error}}</view>
+  <view wx:if="{{loading}}" class="alert alert-info">{{stage}}</view>
+
+  <view class="card">
+    <text class="label">粘贴抖音分享文本</text>
+    <textarea
+      class="textarea"
+      value="{{shareText}}"
+      placeholder="可直接粘贴完整分享文本，例如：4.84 :4pm ... https://v.douyin.com/xxx/ ..."
+      maxlength="-1"
+      disabled="{{loading}}"
+      bindinput="onInput"
+    />
+
+    <view class="btn-row">
+      <button class="btn-secondary" bindtap="onPaste" disabled="{{loading}}">粘贴</button>
+      <button class="btn-primary" bindtap="onSubmit" loading="{{loading}}" disabled="{{loading || !shareText}}">
+        提取文案
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{result}}" class="card">
+    <view class="result-title">{{result.title}}</view>
+    <view class="result-meta">视频 ID: {{result.video_id}} · 时长: {{durationText}} 秒</view>
+    <scroll-view scroll-y class="transcript">{{result.transcript}}</scroll-view>
+    <button class="copy-btn" bindtap="onCopy">一键复制文案</button>
+  </view>
+</view>

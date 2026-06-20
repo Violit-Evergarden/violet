@@ -1,11 +1,11 @@
 import unittest
 from unittest.mock import patch
 
-from app.pipeline import PipelineError, extract_transcript
+from app.domains.video_transcript.pipeline import PipelineError, extract_transcript
 
 
 class PipelineTests(unittest.TestCase):
-    @patch("app.pipeline.settings")
+    @patch("app.domains.video_transcript.pipeline.settings")
     def test_missing_api_key(self, mock_settings):
         mock_settings.api_key_configured = False
         with self.assertRaises(PipelineError) as ctx:
@@ -13,7 +13,7 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(ctx.exception.status_code, 503)
         self.assertIn("SILICONFLOW_API_KEY", str(ctx.exception))
 
-    @patch("app.pipeline.settings")
+    @patch("app.domains.video_transcript.pipeline.settings")
     def test_invalid_share_text(self, mock_settings):
         mock_settings.api_key_configured = True
         mock_settings.temp_dir.mkdir.return_value = None

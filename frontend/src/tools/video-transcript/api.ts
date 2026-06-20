@@ -1,17 +1,6 @@
-export interface ExtractResponse {
-  video_id: string
-  title: string
-  transcript: string
-  duration_seconds: number
-}
+export type { ExtractResponse, HealthResponse } from '@shared/types/api'
 
-export interface HealthResponse {
-  status: string
-  ffmpeg_available: boolean
-  api_key_configured: boolean
-}
-
-export async function fetchHealth(): Promise<HealthResponse> {
+export async function fetchHealth(): Promise<import('@shared/types/api').HealthResponse> {
   const response = await fetch('/api/health')
   if (!response.ok) {
     throw new Error('无法连接后端服务')
@@ -19,8 +8,10 @@ export async function fetchHealth(): Promise<HealthResponse> {
   return response.json()
 }
 
-export async function extractTranscript(shareText: string): Promise<ExtractResponse> {
-  const response = await fetch('/api/extract', {
+export async function extractTranscript(
+  shareText: string,
+): Promise<import('@shared/types/api').ExtractResponse> {
+  const response = await fetch('/api/tools/video-transcript/extract', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ share_text: shareText }),

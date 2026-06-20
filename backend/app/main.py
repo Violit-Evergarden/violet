@@ -5,12 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.config import settings
-from app.models import ExtractRequest, ExtractResponse, HealthResponse
-from app.pipeline import PipelineError, extract_transcript
-from app.services.audio import check_ffmpeg_available
+from app.routers.health import router as health_router
+from app.routers.video_transcript import legacy_router, router as video_transcript_router
 
-app = FastAPI(title="抖音视频文案提取", version="1.0.0")
+app = FastAPI(title="Violet37 工具箱 API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,26 +18,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/api/health", response_model=HealthResponse)
-def health() -> HealthResponse:
-    ffmpeg_available = check_ffmpeg_available()
-    api_key_configured = settings.api_key_configured
-    status = "ok" if ffmpeg_available and api_key_configured else "degraded"
-    return HealthResponse(
-        status=status,
-        ffmpeg_available=ffmpeg_available,
-        api_key_configured=api_key_configured,
-    )
-
-
-@app.post("/api/extract", response_model=ExtractResponse)
-def extract(request: ExtractRequest) -> ExtractResponse:
-    try:
-        return extract_transcript(request.share_text)
-    except PipelineError as exc:
-        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
-
+app.include_router(health_router)
+app.include_router(video_transcript_router)
+app.include_router(legacy_router)
 
 frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 if frontend_dist.exists():

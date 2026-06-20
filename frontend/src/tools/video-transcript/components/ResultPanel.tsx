@@ -32,7 +32,7 @@ export function ResultPanel({
           一键复制
         </button>
       </div>
-      <div className="max-h-96 overflow-y-auto rounded-xl bg-slate-950 p-4 text-sm leading-7 text-slate-200 whitespace-pre-wrap">
+      <div className="max-h-96 overflow-y-auto rounded-xl bg-slate-950 p-4 text-sm leading-7 whitespace-pre-wrap text-slate-200">
         {transcript}
       </div>
     </section>

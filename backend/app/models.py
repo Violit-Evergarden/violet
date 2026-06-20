@@ -1,18 +1,24 @@
-from pydantic import BaseModel, Field
+"""Backward-compatible re-exports."""
 
-
-class ExtractRequest(BaseModel):
-    share_text: str = Field(..., min_length=1, description="抖音分享文本或链接")
-
-
-class ExtractResponse(BaseModel):
-    video_id: str
-    title: str
-    transcript: str
-    duration_seconds: float
+from app.domains.video_transcript.models import (
+    ExtractRequest,
+    ExtractResponse,
+    TaskCreateResponse,
+    TaskStatusResponse,
+)
+from pydantic import BaseModel
 
 
 class HealthResponse(BaseModel):
     status: str
     ffmpeg_available: bool
     api_key_configured: bool
+
+
+__all__ = [
+    "ExtractRequest",
+    "ExtractResponse",
+    "HealthResponse",
+    "TaskCreateResponse",
+    "TaskStatusResponse",
+]
